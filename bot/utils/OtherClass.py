@@ -3,7 +3,10 @@ from aiogram.types import InlineKeyboardButton, Message, CallbackQuery
 
 
 class OtherMsg:
-    def __init__(self, title: str, buttons: list[tuple[str, str]], width: int = 2):
+    def __init__(self, title: str,
+                buttons: list[tuple[str, str]],
+                width: int = 2):
+        
         self.title = title
         self.buttons = buttons
         self.width = width
@@ -21,8 +24,11 @@ class OtherMsg:
         await msg.answer(self.title, reply_markup=self._get_markup())
 
     async def send_call(self, call: CallbackQuery):
+        await call.message.delete()
         await call.message.answer(self.title, reply_markup=self._get_markup())
+        await call.answer()
 
     async def update_call(self, call: CallbackQuery):
+        await call.message.edit_reply_markup(None)
         await call.message.answer(f"Вы перешли в: {self.title}")
         await call.message.answer(self.title, reply_markup=self._get_markup())

@@ -7,7 +7,7 @@ from pydantic import SecretStr
 class SetConfig(BaseSettings):
     token: SecretStr
 
-    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
+    model_config = SettingsConfigDict(env_file='bot/.env', env_file_encoding='utf-8')
 
 # Экземпляр класса
 config = SetConfig()

@@ -25,6 +25,12 @@ async def food(call: CallbackQuery):
     from utils import food_menu
     await food_menu.send_call(call)
 
+@router.callback_query(F.data == "back_food")
+async def bach_food(call: CallbackQuery):
+    await call.message.answer("Вы вернулись в меню Еда на заказ")
+    await food(call) 
+
+
 # Обработчик кнопки "По типу"
 @router.callback_query(F.data == "food_type")
 async def food_type(call: CallbackQuery):

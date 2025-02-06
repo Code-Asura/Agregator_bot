@@ -40,7 +40,7 @@ food_type_menu = OtherMsg(
         ("Диетическая еда", "diet_food"),
         ("Концервация и соусы", "diet_food"),
         ("Напитки", "drinks"),
-        ("Назад", "food")
+        ("Назад", "back_food")
     ]
 )
 
