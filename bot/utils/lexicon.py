@@ -2,7 +2,7 @@ from . import OtherMsg
 
 # Главное меню
 main_menu = OtherMsg(
-    title = "Добро пожаловать в\n<b>Главное меню</b>",
+    title = "Добро пожаловать в <b>Главное меню</b>",
     buttons = [
         ("Еда на заказ", "food"),
         ("Услуги", "plug"), #services
@@ -18,7 +18,7 @@ main_menu = OtherMsg(
 
 # Меню "Еда на заказ"
 food_menu = OtherMsg(
-    title = "Добро пожаловать в\n<b>Еда на заказ</b>",
+    title = "Выберите критерий",
     buttons = [
         ("По типу", "food_type"),
         ("По Кухне", "kitchen"),
@@ -31,7 +31,7 @@ food_menu = OtherMsg(
 
 # Меню кнопки "По типу"
 food_type_menu = OtherMsg(
-    title = "Добро пожаловать в\n<b>По типу еды</b>",
+    title = "Выберите тип",
     buttons = [
         ("Готовая еда", "ready_made_food"),
         ("Мясные изделия", "meat_products"),
@@ -46,7 +46,7 @@ food_type_menu = OtherMsg(
 
 # Меню кнопки "По кухне"
 to_kitchen_menu = OtherMsg(
-    title = "Добро пожаловать в\n<b>По кухне</b>",
+    title = "Выберите кухню",
     buttons = [
         ("Русская", "russian"),
         ("Аргентинская", "argentina"),
@@ -54,13 +54,13 @@ to_kitchen_menu = OtherMsg(
         ("Грузинская", "georgian"),
         ("Японская", "japanes"),
         ("Другое", "more"),
-        ("Назад", "food")
+        ("Назад", "back_food")
     ]
 )
 
 # Меню кнопки "По назначению"
 appointment_menu = OtherMsg(
-    title = "Добро пожаловать в\n<b>По назначению</b>",
+    title = "Выберите назначение",
     width = 1,
     buttons = [
         ("На каждый день", "every_day"),

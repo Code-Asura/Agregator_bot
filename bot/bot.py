@@ -1,5 +1,4 @@
 # Чистые импорты
-import os
 import asyncio
 import logging
 
@@ -27,13 +26,17 @@ async def main():
     
     logger.info("Бот запущен!")
 
-
+    # Определение бота
     bot = Bot(config.token.get_secret_value(),
             default=DefaultBotProperties(parse_mode=ParseMode.HTML)
             )
+    # Подключение меню команд
+    await bot.set_my_commands(config.commands)
     
+    # Определение диспечера
     dp = Dispatcher()
-
+    
+    # Подключение обработчиков (роутеров)
     router = setup_router()
     dp.include_router(router)
 

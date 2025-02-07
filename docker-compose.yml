@@ -1,0 +1,30 @@
+version: 'version'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: my_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  bot:
+    build: .
+    container_name: my_bot
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: "postgresql://myuser:mypassword@postgres:5432/mydatabase"
+    volumes:
+      - .:/apps
+    command: ["python", "bot/bot.py"]
+
+volumes:
+  postgres_data:

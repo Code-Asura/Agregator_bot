@@ -1,7 +1,8 @@
+# Полные импорты
 from aiogram.utils.keyboard import InlineKeyboardBuilder as Ikb
 from aiogram.types import InlineKeyboardButton, Message, CallbackQuery
 
-
+# Класс основа для отправки сообщений
 class OtherMsg:
     def __init__(self, title: str,
                 buttons: list[tuple[str, str]],
@@ -11,6 +12,7 @@ class OtherMsg:
         self.buttons = buttons
         self.width = width
 
+    # Генератор инлайн-клавиатуры
     def _get_markup(self):
         ikb = Ikb()
         ikb.max_width = self.width
@@ -20,15 +22,12 @@ class OtherMsg:
         
         return ikb.as_markup()
     
+    # Отправка сообщений 
     async def send_msg(self, msg: Message):
         await msg.answer(self.title, reply_markup=self._get_markup())
 
+    # Отправка сообщений с помощью callback
     async def send_call(self, call: CallbackQuery):
         await call.message.delete()
         await call.message.answer(self.title, reply_markup=self._get_markup())
         await call.answer()
-
-    async def update_call(self, call: CallbackQuery):
-        await call.message.edit_reply_markup(None)
-        await call.message.answer(f"Вы перешли в: {self.title}")
-        await call.message.answer(self.title, reply_markup=self._get_markup())

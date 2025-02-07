@@ -4,55 +4,57 @@ from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 
+# Импорт всех экземпляров для отправки сообщений
+from utils.lexicon import *
+
 # Экземпляр класса обработчика
 router = Router()
 
 # Обработчик команды /start (Главное меню)
 @router.message(CommandStart())
 async def start(msg: Message):
-    from utils import main_menu
     await main_menu.send_msg(msg)
-
-# Обработчик кнопки назад в меню "Еда на заказ"
-@router.callback_query(F.data == "back_main")
-async def start(call: CallbackQuery):
-    from utils import main_menu
-    await main_menu.send_call(call)
 
 # Обработчик кнопки "Еда на заказ"
 @router.callback_query(F.data == "food")
 async def food(call: CallbackQuery):
-    from utils import food_menu
+    await call.message.answer("Вы перешли в раздел <b>Еда на заказ</b>")
     await food_menu.send_call(call)
 
-@router.callback_query(F.data == "back_food")
-async def bach_food(call: CallbackQuery):
-    await call.message.answer("Вы вернулись в меню Еда на заказ")
-    await food(call) 
-
+# Обработчик кнопки назад в меню "Еда на заказ"
+@router.callback_query(F.data == "back_main")
+async def start(call: CallbackQuery):
+    await call.message.answer("Вернулись в <b>Главное меню</b>")
+    await main_menu.send_call(call)
 
 # Обработчик кнопки "По типу"
 @router.callback_query(F.data == "food_type")
 async def food_type(call: CallbackQuery):
-    from utils import food_type_menu
+    await call.message.answer("Вы перешли в раздел <b>По типу</b>")
     await food_type_menu.send_call(call)
+
+# Обработчик кнопки назад в меню "По типу"
+@router.callback_query(F.data == "back_food")
+async def bach_food(call: CallbackQuery):
+    await call.message.answer("Вы вернулись в меню <b>Еда на заказ</b>")
+    await food_menu.send_call(call)
 
 # Обработчик кнопки "По кухне"
 @router.callback_query(F.data == "kitchen")
 async def food_type(call: CallbackQuery):
-    from utils import to_kitchen_menu
+    await call.message.answer("Вы перешли к выбору <b>По кухне</b>")
     await to_kitchen_menu.send_call(call)
 
 # Обработчик кнопки "По назначению"
 @router.callback_query(F.data == "appointment")
 async def food_type(call: CallbackQuery):
-    from utils import appointment_menu
+    await call.message.answer("Вы перешли к выбору <b>По назначению</b>")
     await appointment_menu.send_call(call)
 
 # Обработчик кнопки "Готовая еда"
 @router.callback_query(F.data == "ready_made_food")
 async def food_type(call: CallbackQuery):
-    from utils import ready_made_food_menu
+    await call.message.answer("Вы перешли к выбору <b>Готовой еды</b>")
     await ready_made_food_menu.send_call(call)
 
 # Обработчик заглушек
