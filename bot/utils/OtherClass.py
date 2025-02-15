@@ -22,12 +22,12 @@ class OtherMsg:
         
         return ikb.as_markup()
     
-    # Отправка сообщений 
     async def send_msg(self, msg: Message):
+        """Отправка сообщение через Message"""
         await msg.answer(self.title, reply_markup=self._get_markup())
 
-    # Отправка сообщений с помощью callback
     async def send_call(self, call: CallbackQuery):
+        """Отправка сообщений с помощью callback"""
         await call.message.delete()
         await call.message.answer(self.title, reply_markup=self._get_markup())
         await call.answer()

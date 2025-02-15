@@ -9,9 +9,15 @@ from pydantic import SecretStr
 from ujson import loads
 from aiogram.types import BotCommand
 from typing import List
+from aiogram.fsm.state import State, StatesGroup
+
+class RegisterSeller(StatesGroup):
+    name = State()
+
 
 # Функция извлечения данных из json
 async def get_json(filename: str) -> list:
+    """Извлечение данных из json"""
     path = f"bot/data/json/{filename}.json"
     if os.path.exists(path):
         async with aiofiles.open(path, "r", encoding="utf-8") as file:

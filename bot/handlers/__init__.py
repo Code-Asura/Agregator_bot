@@ -2,11 +2,12 @@ from aiogram import Router
 
 # Функция подключения всех роутеров из handlers
 def setup_router() -> Router:
-    from . import other
+    """Подключение роутеров из handlers"""
+    from . import buyer
 
     router = Router()
     router.include_routers(
-        other.router,
+        buyer.router,
     )
 
     return router
