@@ -5,15 +5,23 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import ReplyKeyboardBuilder as Rkb
 
+from data.database import DBConnect
 # Импорт всех экземпляров для отправки сообщений
 from utils.buyer_lexicon import *
 
 # Экземпляр класса обработчика
 router = Router()
+# Экземпляр класса БД
+db = DBConnect()
 
 # Обработчик команды /start (Главное меню)
 @router.message(CommandStart())
 async def start(msg: Message):
+    await db.user_manager.add_user(
+        tg_id=msg.from_user.id,
+        username=msg.from_user.username,
+        name=msg.from_user.first_name
+    )
     await main_menu.send_msg(msg)
 
 # Обработчик кнопки "Еда на заказ"

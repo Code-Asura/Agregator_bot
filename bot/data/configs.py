@@ -27,6 +27,7 @@ async def get_json(filename: str) -> list:
 # Класс конфигурации
 class SetConfig(BaseSettings):
     token: SecretStr
+    db_url: str
     commands: List = [BotCommand(command=cmd[0], description=cmd[1])
                        for cmd in asyncio.run(get_json("my_commands"))]
 

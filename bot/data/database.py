@@ -1,26 +1,36 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.sql import select, update, delete
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncAttrs
+from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.sql import select, update, delete, exists
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import Column, Integer, String, Table, MetaData,\
-        ForeignKey, JSON, Text
+        ForeignKey, JSON, Text, BigInteger
+from enum import Enum
+from . import config
 
 # Базовый класс декларативных моделей
 Base = declarative_base()
+
+#Перечисление ролей 
+class Roles(Enum):
+    USER = "user"
+    SELLER = "seller"
+    ADMIN = "admin"
 
 # Модель для пользователей
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    tg_id = Column(Integer, unique=True, nullable=False)
-    username = Column(String, nullable=False)
+    tg_id = Column(BigInteger, unique=True, nullable=False, index=True)
+    username = Column(String, nullable=True)
     name = Column(String, nullable=False)
-    role = Column(String, nullable=False, default="user")
+    role = Column(String, nullable=False, default="user", index=True)
 
 # Модель для продавцов 
-class Seller:
+class Seller(Base):
     __tablename__ = "sellers"
     id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, nullable=False, unique=True, index=True)
     types = Column(String, nullable=False)
     photo_id = Column(Integer, nullable=False)
     company_name = Column(String, nullable=False)
@@ -30,22 +40,38 @@ class Seller:
 
 class DBConnect:
     """Класс с подключением к БД"""
-    def __init__(self, db_url):
-        self.engine = create_async_engine(db_url)
-        self.session = sessionmaker(
-            self.engine, expire_on_commit=False, class_= AsyncSession)
 
-    async def select_data(self, table):
+    engine = create_async_engine(url=config.db_url)
+    session = async_sessionmaker(engine,expire_on_commit=False)
+
+    def __init__(self):
+        self.user_manager = self.UserManager(self)
+        self.seller_manager = self.SellerManager(self)
+    
+    @classmethod
+    async def init_db(cls):
+        """Проверка существуют ли таблицы и их создание если нет"""
+        async with cls.engine.begin() as conn:
+            print("Проверка/создание таблиц...")
+            await conn.run_sync(Base.metadata.create_all)
+            print("Проверка/создание таблиц завешено")
+
+    async def select_data(self, table: str, param: str, arg: str):
         """Извлечение данных с БД"""
         async with self.session() as session:
-            result = await session.execute(select(table))
-            return result.scalars().all()
-
+            result = await session.execute(select(table).filter_by(param=arg))
+            return result.scalars().first()
+        
     class UserManager:
         """Класс управления пользователями"""
-        def __init__(self, session):
-            self.session = session
+        def __init__(self, outer_self):
+            self.session = outer_self.session
         
+        async def _check_user(self, tg_id) -> bool:
+            query = select(exists().where(User.tg_id == tg_id))
+            result = await self.session.execute(query)
+            return result.scalar()
+
         async def add_right(self, role_name):
             """Добавление ролей"""
             #TODO Логика добавлений прав
@@ -63,8 +89,24 @@ class DBConnect:
 
         async def add_user(self, tg_id, username, name):
             """Добавление пользователя"""
-            #TODO Логика добавлений пользователя
-            pass
+            async with self.session() as session:
+                try:
+                    print(session)
+                    new_user = User(
+                        tg_id=tg_id,
+                        username=username,
+                        name=name
+                    )
+                    session.add(new_user)
+                    await session.commit()
+
+                    if username is not None:
+                        print(f"Пользователь {username} добавлен")
+                    else:
+                        print(f"Пользователь {name} с id:{tg_id} добавлен")
+                except IntegrityError:
+                    print("Пользователь есть в базе")
+                
 
         async def remove_user(self, tg_id, username, name):
             """Удаление пользователя"""
@@ -103,5 +145,3 @@ class DBConnect:
             """Извлечение данных по типу для покупателей"""
             #TODO Логика извлечения данных по типу
             pass
-
-        

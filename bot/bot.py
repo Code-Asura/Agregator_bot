@@ -7,12 +7,10 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
-# Кастомные чистые импорты
-
-
 # Кастомные полные импорты
 from data import config
 from handlers import setup_router
+from data.database import DBConnect
 
 # Корневая функия
 async def main():
@@ -40,6 +38,9 @@ async def main():
     router = setup_router()
     dp.include_router(router)
 
+    # Проверка базы данных
+    await DBConnect.init_db()
+    
     #Запуск бота
     try:
         await bot.delete_webhook(True)
