@@ -1,12 +1,13 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncAttrs
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio import async_sessionmaker
-from sqlalchemy.sql import select, update, delete, exists
-from sqlalchemy.orm import declarative_base, relationship, selectinload
+from sqlalchemy.sql import select
+from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import Column, Integer, String, Table, MetaData,\
-        ForeignKey, JSON, Text, BigInteger
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, BigInteger
+
 from aiogram.fsm.context import FSMContext
 from enum import Enum
+
 from . import config
 
 # Базовый класс декларативных моделей
@@ -69,20 +70,10 @@ class DBConnect:
         """Класс управления пользователями"""
         def __init__(self, outer_self):
             self.session = outer_self.session
-        
-        async def _check_user(self, tg_id) -> bool:
-            query = select(exists().where(Users.tg_id == tg_id))
-            result = await self.session.execute(query)
-            return result.scalar()
 
         async def add_right(self, role_name):
             """Добавление ролей"""
             #TODO Логика добавлений прав
-            pass
-
-        async def remove_right(self, role_name):
-            """Удаление ролей"""
-            #TODO Логика удаления прав
             pass
 
         async def modify_right(self, role_name):
@@ -116,23 +107,9 @@ class DBConnect:
                 except Exception as e:
                     print(type(e).__name__)
                 
-
-        async def remove_user(self, tg_id, username, name):
-            """Удаление пользователя"""
-            #TODO Логика удаления пользователя
-            pass
-
         async def modify_user(self, tg_id, username, name):
             """Изменение данных пользователя"""
             #TODO Логика изменения пользователя
-            pass
-
-        async def select_role(self, role_name, tg_id):
-            """Извлечение роли пользователя для фильтра"""
-            #TODO Логика извлечения роли пользователя
-            pass
-
-        async def select_user(self, tg_id):
             pass
 
     class SellerManager:
@@ -181,13 +158,6 @@ class DBConnect:
                 else:
                     print(f"Продавец {user.name} с id:{user.tg_id} зарегистрирован")
                     
-
-
-        async def add_info(self, item_type, item_details, item_photo_id):
-            """Добавление данных"""
-            #TODO Логика добавлений товара или услуги
-            pass
-
         async def modify_info(self, item_type, item_details, item_photo_id):
             """Изменение данных"""
             #TODO Логика изменения товара или услуги
