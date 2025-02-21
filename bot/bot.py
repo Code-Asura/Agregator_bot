@@ -6,6 +6,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.fsm.storage.memory import MemoryStorage
 
 # Кастомные полные импорты
 from data import config
@@ -18,11 +19,11 @@ async def main():
     logger = logging.getLogger(__name__)
 
     logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+        level=logging.ERROR,
+        format="%(asctime)s - %(name)s - %(message)s",
     )
-    
-    logger.info("Бот запущен!")
+
+    logger.error("Бот запущен!")
 
     # Определение бота
     bot = Bot(config.token.get_secret_value(),
@@ -31,9 +32,12 @@ async def main():
     # Подключение меню команд
     await bot.set_my_commands(config.commands)
     
+    # Регистрация хранилища состояний
+    storage = MemoryStorage()
+
     # Определение диспечера
-    dp = Dispatcher()
-    
+    dp = Dispatcher(storage=storage)
+
     # Подключение обработчиков (роутеров)
     router = setup_router()
     dp.include_router(router)

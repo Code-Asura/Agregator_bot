@@ -3,9 +3,10 @@
 from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
-from aiogram.utils.keyboard import ReplyKeyboardBuilder as Rkb
 
+# Импорт класса работы с базой данных
 from data.database import DBConnect
+
 # Импорт всех экземпляров для отправки сообщений
 from utils.buyer_lexicon import *
 
