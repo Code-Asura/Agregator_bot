@@ -3,7 +3,7 @@ from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
-from data.configs import RegisterSeller
+from data.configs import RegisterSeller, EditSeller
 
 # Импорт класса работы с базой данных
 from data.database import DBConnect
@@ -19,7 +19,7 @@ db = DBConnect()
 @router.message(Command('reg_seller'))
 async def reg_seller(msg: Message, state: FSMContext):
     if await db.seller_manager.check_seller(msg.from_user.id):
-        await msg.answer("Вы уже зарегистрированы как продавец")
+        await seller_true.send_msg(msg)
         return
     await msg.answer("Вы перешли в раздел <b>Регистрация продавца</b>")
     await msg.answer("Введите название вашей компании")
@@ -66,11 +66,89 @@ async def photo_id(msg: Message, state: FSMContext):
     await seller_reg_menu.send_msg(msg)
 
 @router.callback_query(F.data == "yes_reg_seller")
-async def reg_seller(call: CallbackQuery, state: FSMContext):
+async def reg_seller_yes(call: CallbackQuery, state: FSMContext):
     await call.message.delete()
     await call.message.answer("Сохраняю данные...")
     await db.seller_manager.register_seller(state)
     await call.message.answer("Данные сохранены")
     await call.message.answer("Вы зарегистрированы как продавец")
     await state.clear()
-    
+
+@router.callback_query(F.data == "no_reg_seller")
+async def reg_seller_no(call: CallbackQuery):
+    await no_reg_seller_menu.send_call_del(call)
+
+@router.callback_query(F.data == "redacted_seller")
+async def redacted_seller(call: CallbackQuery):
+    await no_reg_seller_menu.send_call_del(call)
+
+@router.callback_query(F.data == "edit_company_name")
+async def edit_company_name(call: CallbackQuery, state: FSMContext):
+    await call.message.answer("Введите название вашей компании")
+    await state.set_state(EditSeller.company_name)
+
+@router.message(EditSeller.company_name)
+async def edit_company_name(msg: Message, state: FSMContext):
+    await state.update_data(company_name=msg.text)
+    await state.update_data(tg_id=msg.from_user.id)
+    await db.seller_manager.edit_seller(state)
+    await msg.answer("Название компании изменено")
+    await state.clear()
+
+@router.callback_query(F.data == "edit_types")
+async def edit_types(call: CallbackQuery, state: FSMContext):
+    await call.message.answer("Выберите тип продукции")
+    await state.set_state(EditSeller.types)
+
+@router.message(EditSeller.types)
+async def edit_types(msg: Message, state: FSMContext):
+    await state.update_data(types=msg.text)
+    await state.update_data(tg_id=msg.from_user.id)
+    await db.seller_manager.edit_seller(state)
+    await msg.answer("Тип продукции изменен")
+    await state.clear()
+
+@router.callback_query(F.data == "edit_short_desc")
+async def edit_short_desc(call: CallbackQuery, state: FSMContext):
+    await call.message.answer("Введите короткое описание")
+    await state.set_state(EditSeller.short_desc)
+
+@router.message(EditSeller.short_desc)
+async def edit_short_desc(msg: Message, state: FSMContext):
+    await state.update_data(short_desc=msg.text)
+    await state.update_data(tg_id=msg.from_user.id)
+    await db.seller_manager.edit_seller(state)
+    await msg.answer("Краткое описание изменено")
+    await state.clear()
+
+@router.callback_query(F.data == "edit_photo_id")
+async def edit_photo_id(call: CallbackQuery, state: FSMContext):
+    await call.message.answer("Пришлите новую фотографию")
+    await state.set_state(EditSeller.photo_id)
+
+@router.message(EditSeller.photo_id)
+async def edit_photo_id(msg: Message, state: FSMContext):
+    await state.update_data(photo_id=msg.photo[0].file_id)
+    await state.update_data(tg_id=msg.from_user.id)
+    await db.seller_manager.edit_seller(state)
+    await msg.answer("Фотография изменена")
+    await state.clear()
+
+@router.callback_query(F.data == "edit_full_desk")
+async def edit_full_desk(call: CallbackQuery, state: FSMContext):
+    await call.message.answer("Введите полное описание")
+    await state.set_state(EditSeller.full_desc)
+
+@router.message(EditSeller.full_desc)
+async def edit_full_desk(msg: Message, state: FSMContext):
+    await state.update_data(full_desc=msg.text)
+    await state.update_data(tg_id=msg.from_user.id)
+    await db.seller_manager.edit_seller(state)
+    await msg.answer("Полное описание изменено")
+    await state.clear()
+
+@router.callback_query(F.data == "full_edit_seller")
+async def full_edit_seller(call: CallbackQuery, state: FSMContext):
+    await call.message.answer("Введите название вашей компании")
+    await state.set_state(RegisterSeller.company_name)
+

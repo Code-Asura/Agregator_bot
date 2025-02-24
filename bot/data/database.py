@@ -99,10 +99,7 @@ class DBConnect:
                         print(f"Пользователь {name} с id:{tg_id} добавлен")
 
                 except IntegrityError:
-                    if username is not None:
-                        print(f"Пользователь {username} уже существует")
-                    else:
-                        print(f"Пользователь {name} с id:{tg_id} уже существует")
+                    pass
                         
                 except Exception as e:
                     print(type(e).__name__)
@@ -129,7 +126,9 @@ class DBConnect:
                     else:
                         print(f"Продавец {user.name} с id:{user.tg_id} зарегистрирован")
 
-                return True
+                    return True
+                else:
+                    return False
 
         async def register_seller(self, state: FSMContext):
             """Регистрация продавца"""
@@ -139,6 +138,21 @@ class DBConnect:
                 stmt = select(Users).where(Users.tg_id == data["tg_id"])
                 result = await session.execute(stmt)
                 user = result.scalars().first()
+                
+                if user.role == Roles.SELLER.value:
+                    stmt = select(Seller).where(Seller.user_id == user.id)
+                    result = await session.execute(stmt)
+                    seller = result.scalars().first()
+                    
+                    seller.company_name = data["company_name"]
+                    seller.types=data["types"]
+                    seller.photo_id=data["photo_id"]
+                    seller.short_desc=data["short_desc"]
+                    seller.full_desc=data["full_desc"]
+
+                    await session.commit()
+
+                    return
 
                 user.role = Roles.SELLER.value
 
@@ -158,10 +172,40 @@ class DBConnect:
                 else:
                     print(f"Продавец {user.name} с id:{user.tg_id} зарегистрирован")
                     
-        async def modify_info(self, item_type, item_details, item_photo_id):
-            """Изменение данных"""
-            #TODO Логика изменения товара или услуги
-            pass
+        async def edit_seller(self, state: FSMContext):
+            """Изменение данных продавца с проверкой"""
+            async with self.session() as session:
+                data = await state.get_data()
+
+                stmt = select(Users).where(Users.tg_id == data["tg_id"])
+                result = await session.execute(stmt)
+                user = result.scalars().first()
+
+                if user.role == Roles.SELLER.value:
+                    stmt = select(Seller).where(Seller.user_id == user.id)
+                    result = await session.execute(stmt)
+                    seller = result.scalars().first()
+
+                    match data:
+                        case {"company_name": company_name}:
+                            seller.company_name = company_name
+                        case {"short_desc": short_desc}:
+                            seller.short_desc = short_desc
+                        case {"full_desc": full_desc}:
+                            seller.full_desc = full_desc
+                        case {"photo_id": photo_id}:
+                            seller.photo_id = photo_id
+                        case {"types": types}:
+                            seller.types = types
+                        case _:
+                            return False
+
+                    await session.commit()
+
+                    if user.username is not None:
+                        print(f"Продавец {user.username} изменен")
+                    else:
+                        print(f"Продавец {user.name} с id:{user.tg_id} изменен")
 
         async def select_info(self, types):
             """Извлечение данных по типу для покупателей"""

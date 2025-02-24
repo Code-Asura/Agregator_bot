@@ -31,7 +31,7 @@ async def main():
             )
     # Подключение меню команд
     await bot.set_my_commands(config.commands)
-    
+
     # Регистрация хранилища состояний
     storage = MemoryStorage()
 
@@ -44,7 +44,7 @@ async def main():
 
     # Проверка базы данных
     await DBConnect.init_db()
-    
+
     #Запуск бота
     try:
         await bot.delete_webhook(True)

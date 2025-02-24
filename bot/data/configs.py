@@ -10,13 +10,18 @@ from ujson import loads
 from aiogram.types import BotCommand
 from typing import List
 from aiogram.fsm.state import State, StatesGroup
-
-class RegisterSeller(StatesGroup):
-    name = State()
 from typing import List, Dict
 from aiogram.fsm.state import State, StatesGroup
 
 class RegisterSeller(StatesGroup):
+    company_name = State()
+    types = State()
+    short_desc = State()
+    full_desc = State()
+    photo_id = State()
+    tg_id = State()
+
+class EditSeller(StatesGroup):
     company_name = State()
     types = State()
     short_desc = State()
@@ -37,7 +42,7 @@ async def get_json(filename: str) -> list:
 class SetConfig(BaseSettings):
     token: SecretStr
     db_url: str
-    superadmin: Dict = {name: tg_id for name, tg_id in asyncio.run(get_json("superadmin"))}
+    superadmin: List = [i for i in asyncio.run(get_json("superadmin"))]
     commands: List = [BotCommand(command=cmd[0], description=cmd[1])
                        for cmd in asyncio.run(get_json("my_commands"))]
 
