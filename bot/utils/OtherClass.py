@@ -26,7 +26,8 @@ class OtherMsg:
     
     async def send_msg(self, msg: Message):
         """Отправка сообщение через Message"""
-        await msg.answer(self.title, reply_markup=self._get_markup())
+        if self.buttons is not None:
+            await msg.answer(self.title, reply_markup=self._get_markup())
 
     async def send_call(self, call: CallbackQuery):
         """Отправка сообщений с помощью callback"""

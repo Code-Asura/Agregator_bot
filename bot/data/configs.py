@@ -29,6 +29,10 @@ class EditSeller(StatesGroup):
     photo_id = State()
     tg_id = State()
 
+class Feedback(StatesGroup):
+    message = State()
+    photo = State()
+
 # Функция извлечения данных из json
 async def get_json(filename: str) -> list:
     """Извлечение данных из json"""

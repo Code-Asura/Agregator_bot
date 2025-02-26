@@ -1,7 +1,7 @@
 
 # Полные импорты
 from aiogram import Router, F
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 
 # Импорт класса работы с базой данных
@@ -91,9 +91,12 @@ async def food_type(call: CallbackQuery):
 
 # Обработчик кнопки "Обратная связь"
 @router.callback_query(F.data == "feedback")
-async def food_type(call: CallbackQuery):
+async def feedback_call(call: CallbackQuery):
     await call.message.answer("😊Мы всегда рады вашим отзывам и любой обратной связи!\n"
                               "📩Если у вас есть предложения, замечания или простослова поддержки.\n"
                               "Если вы нашли ошибку, приложите, пожалуйста, скриншот или подробное описание.\n"
                               "Мы внимательно читаем каждое сообщение и стремимся сделать наш сервис еще лучше.")
     
+@router.message(Command('feedback'))
+async def feedback_cmd(msg: Message):
+    pass
