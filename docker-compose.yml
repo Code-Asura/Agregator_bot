@@ -1,29 +1,36 @@
-version: 'version'
+
+networks:
+  argentina: 
 
 services:
   postgres:
-    image: postgres:15
-    container_name: my_postgres
+    image: postgres:16
+    container_name: postgres
     restart: always
+    networks:
+      - argentina
     environment:
-      POSTGRES_DB: mydatabase
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: postgres
+      POSTGRES_USER: botuser
+      POSTGRES_PASSWORD: Argentina010225
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   bot:
     build: .
-    container_name: my_bot
+    container_name: bot
     restart: always
+    networks:
+      - argentina
     depends_on:
       - postgres
     environment:
-      DATABASE_URL: "postgresql://myuser:mypassword@postgres:5432/mydatabase"
+      DB_URL: "postgresql+asyncpg://botuser:Argentina010225@localhost:5433/agregator"
     volumes:
-      - .:/apps
+      - .:/bot
+    working_dir: /bot
     command: ["python", "bot/bot.py"]
 
 volumes:

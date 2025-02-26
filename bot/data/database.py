@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.sql import select
-from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import declarative_base, relationship, joinedload
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy import Column, Integer, String, ForeignKey, Text, BigInteger
 
 from aiogram.fsm.context import FSMContext
@@ -129,7 +129,6 @@ class DBConnect:
                     return True
                 else:
                     return False
-
         async def register_seller(self, state: FSMContext):
             """Регистрация продавца"""
             async with self.session() as session:
