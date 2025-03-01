@@ -176,35 +176,34 @@ class DBConnect:
             async with self.session() as session:
                 data = await state.get_data()
 
-                stmt = select(Users).where(Users.tg_id == data["tg_id"])
-                result = await session.execute(stmt)
+                result = await session.execute(
+                        select(Users).options(joinedload(Users.seller)).
+                        filter(Users.tg_id == data['tg_id'])
+                    )
+                
                 user = result.scalars().first()
+                seller = user.seller
 
-                if user.role == Roles.SELLER.value:
-                    stmt = select(Seller).where(Seller.user_id == user.id)
-                    result = await session.execute(stmt)
-                    seller = result.scalars().first()
+                match data:
+                    case {"company_name": company_name}:
+                        seller.company_name = company_name
+                    case {"short_desc": short_desc}:
+                        seller.short_desc = short_desc
+                    case {"full_desc": full_desc}:
+                        seller.full_desc = full_desc
+                    case {"photo_id": photo_id}:
+                        seller.photo_id = photo_id
+                    case {"types": types}:
+                        seller.types = types
+                    case _:
+                        return False
 
-                    match data:
-                        case {"company_name": company_name}:
-                            seller.company_name = company_name
-                        case {"short_desc": short_desc}:
-                            seller.short_desc = short_desc
-                        case {"full_desc": full_desc}:
-                            seller.full_desc = full_desc
-                        case {"photo_id": photo_id}:
-                            seller.photo_id = photo_id
-                        case {"types": types}:
-                            seller.types = types
-                        case _:
-                            return False
+                await session.commit()
 
-                    await session.commit()
-
-                    if user.username is not None:
-                        print(f"Продавец {user.username} изменен")
-                    else:
-                        print(f"Продавец {user.name} с id:{user.tg_id} изменен")
+                if user.username is not None:
+                    print(f"Продавец {user.username} изменен")
+                else:
+                    print(f"Продавец {user.name} с id:{user.tg_id} изменен")
 
         async def select_info(self, types):
             """Извлечение данных по типу для покупателей"""

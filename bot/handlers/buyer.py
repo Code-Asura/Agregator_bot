@@ -39,43 +39,43 @@ async def main_menu_func(call: CallbackQuery):
 @router.callback_query(F.data == "food")
 async def food(call: CallbackQuery):
     await call.message.answer("Вы перешли в раздел <b>Еда на заказ</b>")
-    await food_menu.send_call_del(call)
-
-# Обработчик кнопки назад в меню "Еда на заказ"
-@router.callback_query(F.data == "back_main")
-async def start(call: CallbackQuery):
-    await call.message.answer("Вернулись в <b>Главное меню</b>")
-    await main_menu.send_call_del(call)
-
-# Обработчик кнопки "По типу"
-@router.callback_query(F.data == "food_type")
-async def food_type(call: CallbackQuery):
-    await call.message.answer("Вы перешли в раздел <b>По типу</b>")
     await food_type_menu.send_call_del(call)
 
-# Обработчик кнопки назад в меню "По типу"
-@router.callback_query(F.data == "back_food")
-async def bach_food(call: CallbackQuery):
-    await call.message.answer("Вы вернулись в меню <b>Еда на заказ</b>")
-    await food_menu.send_call_del(call)
+# # Обработчик кнопки назад в меню "Еда на заказ"
+# @router.callback_query(F.data == "back_main")
+# async def start(call: CallbackQuery):
+#     await call.message.answer("Вернулись в <b>Главное меню</b>")
+#     await main_menu.send_call_del(call)
 
-# Обработчик кнопки "По кухне"
-@router.callback_query(F.data == "kitchen")
-async def food_type(call: CallbackQuery):
-    await call.message.answer("Вы перешли к выбору <b>По кухне</b>")
-    await to_kitchen_menu.send_call_del(call)
+# # Обработчик кнопки "По типу"
+# @router.callback_query(F.data == "food_type")
+# async def food_type(call: CallbackQuery):
+#     await call.message.answer("Вы перешли в раздел <b>По типу</b>")
+#     await food_type_menu.send_call_del(call)
 
-# Обработчик кнопки "По назначению"
-@router.callback_query(F.data == "appointment")
-async def food_type(call: CallbackQuery):
-    await call.message.answer("Вы перешли к выбору <b>По назначению</b>")
-    await appointment_menu.send_call_del(call)
+# # Обработчик кнопки назад в меню "По типу"
+# @router.callback_query(F.data == "back_food")
+# async def bach_food(call: CallbackQuery):
+#     await call.message.answer("Вы вернулись в меню <b>Еда на заказ</b>")
+#     await food_menu.send_call_del(call)
 
-# Обработчик кнопки "Готовая еда"
-@router.callback_query(F.data == "ready_made_food")
-async def food_type(call: CallbackQuery):
-    await call.message.answer("Вы перешли к выбору <b>Готовой еды</b>")
-    await ready_made_food_menu.send_call_del(call)
+# # Обработчик кнопки "По кухне"
+# @router.callback_query(F.data == "kitchen")
+# async def food_type(call: CallbackQuery):
+#     await call.message.answer("Вы перешли к выбору <b>По кухне</b>")
+#     await to_kitchen_menu.send_call_del(call)
+
+# # Обработчик кнопки "По назначению"
+# @router.callback_query(F.data == "appointment")
+# async def food_type(call: CallbackQuery):
+#     await call.message.answer("Вы перешли к выбору <b>По назначению</b>")
+#     await appointment_menu.send_call_del(call)
+
+# # Обработчик кнопки "Готовая еда"
+# @router.callback_query(F.data == "ready_made_food")
+# async def food_type(call: CallbackQuery):
+#     await call.message.answer("Вы перешли к выбору <b>Готовой еды</b>")
+#     await ready_made_food_menu.send_call_del(call)
 
 # Обработчик заглушек
 @router.callback_query(F.data == "plug")
@@ -85,9 +85,9 @@ async def food_type(call: CallbackQuery):
                               "Активный раздел - Еда на заказ"")")
     
 # Обработчик кнопки "Отзывы"
-@router.callback_query(F.data == "reviews")
-async def food_type(call: CallbackQuery):
-    await call.message.answer("Пока этот раздел не нужен")
+# @router.callback_query(F.data == "reviews")
+# async def food_type(call: CallbackQuery):
+#     await call.message.answer("Пока этот раздел не нужен")
 
 # Обработчик кнопки "Обратная связь"
 @router.callback_query(F.data == "feedback")

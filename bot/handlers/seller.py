@@ -19,11 +19,7 @@ db = DBConnect()
 @router.message(Command('reg_seller'))
 async def reg_seller(msg: Message, state: FSMContext):
     if await db.seller_manager.check_seller(msg.from_user.id):
-<<<<<<< HEAD
         await seller_true.send_msg(msg)
-=======
-        await seller_true_menu.send_msg(msg)
->>>>>>> 6088772 (match)
         return
     await msg.answer("Вы перешли в раздел <b>Регистрация продавца</b>")
     await msg.answer("Введите название вашей компании")
@@ -76,15 +72,14 @@ async def reg_seller_yes(call: CallbackQuery, state: FSMContext):
     await call.message.answer("Данные сохранены")
     await call.message.answer("Вы зарегистрированы как продавец")
     await state.clear()
-<<<<<<< HEAD
 
 @router.callback_query(F.data == "no_reg_seller")
 async def reg_seller_no(call: CallbackQuery):
     await no_reg_seller_menu.send_call_del(call)
 
 @router.callback_query(F.data == "redacted_seller")
-async def redacted_seller(call: CallbackQuery):
-    await no_reg_seller_menu.send_call_del(call)
+async def redacted_seller_func(call: CallbackQuery):
+    await redacted_seller.send_call_del(call)
 
 @router.callback_query(F.data == "edit_company_name")
 async def edit_company_name(call: CallbackQuery, state: FSMContext):
@@ -156,6 +151,3 @@ async def full_edit_seller(call: CallbackQuery, state: FSMContext):
     await call.message.answer("Введите название вашей компании")
     await state.set_state(RegisterSeller.company_name)
 
-=======
-    
->>>>>>> 6088772 (match)
