@@ -13,6 +13,7 @@ from . import config
 # Базовый класс декларативных моделей
 Base = declarative_base()
 
+# region Модели
 #Перечисление ролей 
 class Roles(Enum):
     USER = "user"
@@ -40,8 +41,9 @@ class Seller(Base):
     short_desc = Column(String, nullable=False)
     full_desc = Column(Text, nullable=False)
     users = relationship("Users", back_populates="seller")
+# endregion
 
-
+# region Работа с БД
 class DBConnect:
     """Класс с подключением к БД"""
 
@@ -65,7 +67,7 @@ class DBConnect:
         async with self.session() as session:
             result = await session.execute(select(table).filter_by(param=arg))
             return result.scalars().first()
-        
+    # region Работа с юзером
     class UserManager:
         """Класс управления пользователями"""
         def __init__(self, outer_self):
@@ -108,7 +110,8 @@ class DBConnect:
             """Изменение данных пользователя"""
             #TODO Логика изменения пользователя
             pass
-
+    # endregion
+    # region Работа с селлером
     class SellerManager:
         """Класс управления данными продавцов"""
         def __init__(self, outer_self):
@@ -209,3 +212,5 @@ class DBConnect:
             """Извлечение данных по типу для покупателей"""
             #TODO Логика извлечения данных по типу
             pass
+    # endregion
+# endregion

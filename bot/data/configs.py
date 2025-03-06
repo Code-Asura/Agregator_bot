@@ -13,6 +13,7 @@ from aiogram.fsm.state import State, StatesGroup
 from typing import List, Dict
 from aiogram.fsm.state import State, StatesGroup
 
+# region FSM
 class RegisterSeller(StatesGroup):
     company_name = State()
     types = State()
@@ -32,6 +33,7 @@ class EditSeller(StatesGroup):
 class Feedback(StatesGroup):
     message = State()
     photo = State()
+# endregion
 
 # Функция извлечения данных из json
 async def get_json(filename: str) -> list:
@@ -46,6 +48,7 @@ async def get_json(filename: str) -> list:
 class SetConfig(BaseSettings):
     token: SecretStr
     db_url: str
+    feedback_grup: int
     superadmin: List = [i for i in asyncio.run(get_json("superadmin"))]
     commands: List = [BotCommand(command=cmd[0], description=cmd[1])
                        for cmd in asyncio.run(get_json("my_commands"))]
