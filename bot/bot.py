@@ -35,6 +35,7 @@ async def main():
     # Регистрация хранилища состояний
     storage = MemoryStorage()
 
+    #TODO добавить мидлварь на проверку данных пользователя
     # Определение диспечера
     dp = Dispatcher(storage=storage)
 

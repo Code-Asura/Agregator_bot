@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.sql import select
 from sqlalchemy.orm import declarative_base, relationship, joinedload
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, BigInteger
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, BigInteger, func
 
 from aiogram.fsm.context import FSMContext
 from enum import Enum
@@ -75,12 +75,12 @@ class DBConnect:
 
         async def add_right(self, role_name):
             """Добавление ролей"""
-            #TODO Логика добавлений прав
+            #TODO {отложено} Логика добавлений прав
             pass
 
         async def modify_right(self, role_name):
             """Изменение ролей"""
-            #TODO Логика изменения прав
+            #TODO {отложено} Логика изменения прав
             pass
 
         async def add_user(self, tg_id, username, name):
@@ -108,8 +108,26 @@ class DBConnect:
                 
         async def modify_user(self, tg_id, username, name):
             """Изменение данных пользователя"""
-            #TODO Логика изменения пользователя
-            pass
+            async with self.session() as session:
+                try:
+                    result = await session.execute(
+                        select(Users).where(Users.tg_id == tg_id)
+                    )
+                    user = result.scalar_one_or_none()
+                    
+                    if user:
+                        if user.username != username or user.name != name:
+                            user.username = username
+                            user.name = name
+                            await session.commit()
+                            print(f"Пользователь {tg_id} обновлен")
+                        else:
+                            print("Данные пользователя не изменились")
+                    else:
+                        print(f"Пользователь с tg_id {tg_id} не найден")
+                
+                except SQLAlchemyError as e:
+                    print(f"Ошибка базы данных: {e}")
     # endregion
     # region Работа с селлером
     class SellerManager:
@@ -208,9 +226,26 @@ class DBConnect:
                 else:
                     print(f"Продавец {user.name} с id:{user.tg_id} изменен")
 
-        async def select_info(self, types):
-            """Извлечение данных по типу для покупателей"""
-            #TODO Логика извлечения данных по типу
-            pass
+        async def select_info(self, types, options=None):
+            """Извлечение данных по типу для покупателей с подгрузкой данных о пользователе"""
+            async with self.session() as session:
+                query = (
+                    select(Seller)
+                    .where(Seller.types == types)
+                    .order_by(func.random())
+                    .limit(5)
+                    .options(joinedload(Seller.users))  # Загрузка связанных данных о пользователе
+                )
+                result = await session.execute(query)
+                sellers = result.scalars().all()
+                return sellers
+
+        async def get_seller_by_id(self, seller_id: int) -> Seller:
+            async with self.session() as session:
+                stmt = select(Seller).where(Seller.id == seller_id).options(joinedload(Seller.users))
+                result = await session.execute(stmt)
+                return result.scalars().first()
+            
+
     # endregion
 # endregion

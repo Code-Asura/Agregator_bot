@@ -2,12 +2,15 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder as Ikb
 from aiogram.types import InlineKeyboardButton, Message, CallbackQuery
 
+from data.database import DBConnect
+
+db = DBConnect()
 
 class OtherMsg:
     """Класс основа для отправки сообщений"""
     def __init__(self, title_1: str,
-                title_2: str | None,
-                buttons: list[tuple[str, str]] | None,
+                title_2: str | None = None,
+                buttons: list[tuple[str, str]] | None = None,
                 width: int = 2):
         
         self.title_1 = title_1
@@ -60,3 +63,23 @@ class OtherMsg:
         else: 
             await call.message.answer(self.title_1)
         await call.answer()
+
+    async def send_info(self, call: CallbackQuery, types: str):
+        """Отправка информационного сообщения"""
+        sellers = await db.seller_manager.select_info(types)
+
+        await call.message.answer(self.title_1)
+
+        for seller in sellers:   
+            ikb = Ikb()
+            ikb.max_width = 2
+            ikb.button(text="Подробнее", callback_data=f"seller_{seller.id}")
+            ikb.button(text="Заказать", url=f"tg://user?id={seller.users.tg_id}")
+            ikb.button(text="Отзывы", callback_data="reviews")
+            ikb.button(text="Назад", callback_data="food")
+            # Отправляем сообщение с фото и описанием
+            await call.message.answer_photo(
+                photo=seller.photo_id,
+                caption=seller.short_desc,
+                reply_markup=ikb.as_markup()
+            )

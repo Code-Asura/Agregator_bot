@@ -58,7 +58,7 @@ async def full_desc(msg: Message, state: FSMContext):
     await state.set_state(RegisterSeller.photo_id)
 
 # Обработчик состояния для фотографии
-#TODO Доделать возможность принимать несколько фото и 1 для карточки
+#TODO {отложено} Доделать возможность принимать несколько фото и 1 для карточки
 @router.message(RegisterSeller.photo_id)
 async def photo_id(msg: Message, state: FSMContext):
     await state.update_data(photo_id=msg.photo[0].file_id)
@@ -149,7 +149,7 @@ async def edit_short_desc(msg: Message, state: FSMContext):
     await state.clear()
 
 # Обработчик кнопки изменения фотографии
-#TODO доделать возможность изменения всех фото
+#TODO {отложено} доделать возможность изменения всех фото 
 @router.callback_query(F.data == "edit_photo_id")
 async def edit_photo_id(call: CallbackQuery, state: FSMContext):
     await call.message.answer("Пришлите новую фотографию")

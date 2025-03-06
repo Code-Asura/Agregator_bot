@@ -5,12 +5,14 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder as IKB
+from sqlalchemy.orm import joinedload
+
 
 from data.configs import Feedback
 from data import config
 
 # Импорт класса работы с базой данных
-from data.database import DBConnect
+from data.database import DBConnect, Seller
 
 # Импорт всех экземпляров для отправки сообщений
 from utils.buyer_lexicon import *
@@ -29,6 +31,7 @@ async def start(msg: Message):
         username=msg.from_user.username,
         name=msg.from_user.first_name
     )
+    await db.user_manager.modify_user(msg.from_user.id, msg.from_user.username, msg.from_user.first_name)
     await start_message.send_msg(msg)
 
 # Обработчик для показа следующего приветственного сообщения
@@ -52,6 +55,25 @@ async def food(call: CallbackQuery):
 async def start(call: CallbackQuery):
     await call.message.answer("Вернулись в <b>Главное меню</b>")
     await main_menu.send_call_del(call)
+
+#TODO донастроить всё это дело.
+@router.callback_query(F.data == "ready_made_food")
+async def ready_made_food_func(call: CallbackQuery):
+    await ready_made_food.send_info(call, "food")
+
+@router.callback_query(F.data.startswith("seller_"))
+async def handle_seller_button(call: CallbackQuery):
+    # Извлекаем seller.id из callback_data
+    seller_id = int(call.data.split("_")[1])  # seller_123 -> 123
+    
+    # Например, ищем информацию о продавце по ID
+    seller = await db.seller_manager.get_seller_by_id(seller_id)
+    
+    # Отправляем пользователю информацию о продавце
+    await call.message.answer_photo(
+        photo=seller.photo_id,
+        caption=f"{seller.full_desc}\n @{seller.users.username}",
+    )
 
 # region Пока не нужное
 # # Обработчик кнопки "По типу"
@@ -120,7 +142,7 @@ async def feedback_photo_func(msg: Message, state: FSMContext):
     await state.set_state(Feedback.photo)
 
 # Обработчик состояния фото если есть
-#TODO Добавить возможность получать альбом
+#TODO {отложено} Добавить возможность получать альбом
 @router.message(Feedback.photo)
 async def feedback_func(msg: Message, state: FSMContext):
     await state.update_data(photo=msg.photo[0].file_id)
@@ -167,5 +189,14 @@ async def yes_feedback_send(call: CallbackQuery, state: FSMContext):
         await call.message.answer("Отправлено ☺️")
         state.clear()
 
-#TODO Добавить обработку отказа и изменения
+@router.callback_query(F.data == "no_send_feedback")
+async def no_feedback_send(call: CallbackQuery, state: FSMContext):
+    await call.message.answer("Отправка отменена")
+    state.clear()
+
+@router.callback_query(F.data == "edit_feedback")
+async def edit_feedback_func(call: CallbackQuery, state: FSMContext):
+    await call.message.answer("Отправьте ваше обращение (текст)")
+    await state.set_state(Feedback.message)
+
 # endregion
