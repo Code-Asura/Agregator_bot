@@ -50,29 +50,42 @@ async def food(call: CallbackQuery):
     await call.message.answer("Вы перешли в раздел <b>Еда на заказ</b>")
     await food_type_menu.send_call_del(call)
 
+@router.callback_query(F.data == "back_food")
+async def back_food_funk(call: CallbackQuery):
+    await call.message.answer("Вы вернулись в меню <b>Еда на заказ</b>")
+    await food_type_menu.send_call(call)
+
 # Обработчик кнопки назад в меню "Еда на заказ"
 @router.callback_query(F.data == "back_main")
 async def start(call: CallbackQuery):
     await call.message.answer("Вернулись в <b>Главное меню</b>")
     await main_menu.send_call_del(call)
 
-#TODO донастроить всё это дело.
-@router.callback_query(F.data == "ready_made_food")
+@router.callback_query(F.data.startswith("info_"))
 async def ready_made_food_func(call: CallbackQuery):
-    await ready_made_food.send_info(call, "food")
+    info = "_".join(call.data.split("_")[1:])
+
+    match info:
+        case "ready_made_food" | "meat_products" | "semi_finished" | \
+             "desserts_pastries" | "diet_food" | "konc_sous_food" | "drinks":
+            
+            await ready_made_food.send_info(call, info)
 
 @router.callback_query(F.data.startswith("seller_"))
 async def handle_seller_button(call: CallbackQuery):
-    # Извлекаем seller.id из callback_data
-    seller_id = int(call.data.split("_")[1])  # seller_123 -> 123
+    ikb = IKB()
+    ikb.button(text="Отзывы", callback_data="reviews")
+    ikb.button(text="Назад", callback_data="back_food")
+
+    seller_id = int(call.data.split("_")[1]) 
     
-    # Например, ищем информацию о продавце по ID
     seller = await db.seller_manager.get_seller_by_id(seller_id)
     
-    # Отправляем пользователю информацию о продавце
     await call.message.answer_photo(
         photo=seller.photo_id,
-        caption=f"{seller.full_desc}\n @{seller.users.username}",
+        caption=f"Полное описание:{seller.full_desc}\n"
+                 "Связаться: @{seller.users.username}",
+        reply_markup=ikb.as_markup()
     )
 
 # region Пока не нужное
@@ -115,9 +128,7 @@ async def handle_seller_button(call: CallbackQuery):
 # Обработчик заглушек
 @router.callback_query(F.data == "plug")
 async def food_type(call: CallbackQuery):
-    await call.message.answer("Бот работает в тестовом режиме.\n"
-                              "Данный раздел скоро запустится.\n"
-                              "Активный раздел - Еда на заказ")
+    await plug.send_call_del(call)
 
 # region Обратная связь
 # Обработчик команды обратная связь

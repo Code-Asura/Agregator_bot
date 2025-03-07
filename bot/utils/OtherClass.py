@@ -66,20 +66,27 @@ class OtherMsg:
 
     async def send_info(self, call: CallbackQuery, types: str):
         """Отправка информационного сообщения"""
+        await call.message.delete()
         sellers = await db.seller_manager.select_info(types)
+        
+        if not sellers:
+            ikb2 = Ikb()
+            ikb2.button(text="Назад ↩️", callback_data="back_food")
+            await call.message.answer("В этом разделе ничего нет", reply_markup=ikb2.as_markup())
+            return
 
         await call.message.answer(self.title_1)
 
-        for seller in sellers:   
-            ikb = Ikb()
-            ikb.max_width = 2
-            ikb.button(text="Подробнее", callback_data=f"seller_{seller.id}")
-            ikb.button(text="Заказать", url=f"tg://user?id={seller.users.tg_id}")
-            ikb.button(text="Отзывы", callback_data="reviews")
-            ikb.button(text="Назад", callback_data="food")
+        for seller in sellers: 
+            ikb1 = Ikb() 
+            ikb1.max_width = 2
+            ikb1.button(text="Подробнее", callback_data=f"seller_{seller.id}")
+            ikb1.button(text="Заказать", url=f"tg://user?id={seller.users.tg_id}")
+            ikb1.button(text="Отзывы", callback_data="reviews")
+            ikb1.button(text="Назад ↩️", callback_data="back_food")
             # Отправляем сообщение с фото и описанием
             await call.message.answer_photo(
                 photo=seller.photo_id,
                 caption=seller.short_desc,
-                reply_markup=ikb.as_markup()
+                reply_markup=ikb1.as_markup()
             )

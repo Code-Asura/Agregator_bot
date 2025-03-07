@@ -44,3 +44,31 @@ editing_seller = OtherMsg(
         ("Всё", "full_edit_seller")
     ]
 )
+
+reg_seller_types_menu = OtherMsg(
+    title_1 = "Выберите тип продукции",
+    buttons = [
+        ("🍕Еда🍱", "food_reg_seller"),
+        ("⚡️Услуги💼", "plug"), #services
+        ("🏠Недвижимость🏢", "plug"), #estate
+        ("🍷Русские заведения🎵", "plug"), #russian_est
+        ("💰Обменники🔄", "plug"), #exchangers
+        #("Товары", "plug"), #products
+        ("🎉Мероприятия📅", "plug"), #events
+        #("Отзывы", "reviews"),
+    ]
+)
+
+reg_seller_food_type_menu = OtherMsg(
+    title_1 = "Выберите категорию",
+    buttons = [
+        ("Готовая еда 🍱", "reg_seller_ready_made_food"),
+        ("Мясные изделия 🥩", "reg_seller_meat_products"),
+        ("Полуфабрикаты 🥟", "reg_seller_semi_finished"),
+        ("Десерты и выпечка 🍰", "reg_seller_desserts_pastries"),
+        ("Диетическая еда 🥗", "reg_seller_diet_food"),
+        ("Консервация и соусы 🥫", "reg_seller_konc_sous_food"),
+        ("Напитки 🥤", "reg_seller_drinks"),
+        ("Назад ↩️", "reg_seller_back_food")
+    ]
+)

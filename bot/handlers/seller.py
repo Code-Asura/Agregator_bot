@@ -3,6 +3,8 @@ from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.keyboard import InlineKeyboardBuilder as IKB
+
 
 # Импорт классов состояний
 from data.configs import RegisterSeller, EditSeller
@@ -31,21 +33,48 @@ async def reg_seller(msg: Message, state: FSMContext):
 # Обработчик состояния для имени компаннии
 @router.message(RegisterSeller.company_name)
 async def company_name(msg: Message, state: FSMContext):
+    ikb = IKB()
+    ikb.button(text="Да", callback_data="yes_reg_company_name")
+    ikb.button(text="Нет", callback_data="no_reg_company_name")
     await state.update_data(company_name=msg.text)
-    await msg.answer("Выберите тип продукции")
+    await msg.answer(f"Ваше название {msg.text}?", reply_markup=ikb.as_markup())
+
+@router.callback_query(F.data == "yes_reg_company_name")
+async def yes_reg_company_name_func(call: CallbackQuery, state: FSMContext):
+    await call.message.answer("Выберите тип продукции")
+    await reg_seller_types_menu.send_call(call)
     await state.set_state(RegisterSeller.types)
 
-# Обработчик состояния для типа продукции
-#TODO Доделать менюшку и переделать сохранение
-@router.message(RegisterSeller.types)
-async def types(msg: Message, state: FSMContext):
-    await state.update_data(types=msg.text)
-    await msg.answer("Введите короткое описание продукции")
-    await state.set_state(RegisterSeller.short_desc)
+@router.callback_query(F.data == "no_reg_company_name")
+async def no_reg_company_name_func(call: CallbackQuery, state: FSMContext):
+    await call.message.answer("Введите название компании")
+    await state.set_state(RegisterSeller.company_name)
+
+@router.callback_query(F.data == "food_reg_seller")
+async def food_reg_seller_func(call: CallbackQuery, state: FSMContext):
+    await reg_seller_food_type_menu.send_call_del(call)
+
+
+@router.callback_query(F.data.startswith("reg_seller_"))
+async def reg_seller_ready_made_food_func(call: CallbackQuery, state: FSMContext):
+    types = "_".join(call.data.split("_")[2:])
+    match types:
+        case "ready_made_food" | "meat_products" | "semi_finished" | \
+             "desserts_pastries" | "diet_food" | "konc_sous_food" | "drinks":
+            
+            await state.update_data(types=types)
+            await call.message.answer("Введите короткое описание")
+            await state.set_state(RegisterSeller.short_desc)
+        case "back_food":
+            await yes_reg_company_name_func(call, state)
 
 # Обработчик состояния для короткого описания
 @router.message(RegisterSeller.short_desc)
 async def short_desc(msg: Message, state: FSMContext):
+    if msg.photo:
+        await msg.answer("Короткое описание состоит из БУКВ и СЛОВ")
+        state.set_state(RegisterSeller.short_desc)
+        return
     await state.update_data(short_desc=msg.text)
     await msg.answer("Введите полное описание продукции")
     await state.set_state(RegisterSeller.full_desc)
@@ -53,6 +82,10 @@ async def short_desc(msg: Message, state: FSMContext):
 # Обработчик состояния для полного описания
 @router.message(RegisterSeller.full_desc)
 async def full_desc(msg: Message, state: FSMContext):
+    if msg.photo:
+        await msg.answer("Короткое описание состоит из БУКВ и СЛОВ")
+        state.set_state(RegisterSeller.full_desc)
+        return
     await state.update_data(full_desc=msg.text)
     await msg.answer("Пришлите фотографию продукции")
     await state.set_state(RegisterSeller.photo_id)
@@ -75,14 +108,16 @@ async def photo_id(msg: Message, state: FSMContext):
     await seller_reg_menu.send_msg(msg)
 
 # Обработчик подтверждения на сохранение
-#TODO добавить проверку на регистрацию/изменение всех данных
 @router.callback_query(F.data == "yes_reg_seller")
 async def reg_seller_yes(call: CallbackQuery, state: FSMContext):
+    ikb = IKB()
+    ikb.button(text="Главное меню", callback_data="main_menu")
+
     await call.message.delete()
     await call.message.answer("Сохраняю данные...")
     await db.seller_manager.register_seller(state)
     await call.message.answer("Данные сохранены")
-    await call.message.answer("Вы зарегистрированы как продавец")
+    await call.message.answer("Вы зарегистрированы как продавец", reply_markup=ikb.as_markup())
     await state.clear()
 
 # Обработчик изменения данных
