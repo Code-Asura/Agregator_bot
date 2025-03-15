@@ -1,11 +1,10 @@
-# Системные импорты
+#Системные импорты
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder as IKB
-
-
+from data import config
 # Импорт классов состояний
 from data.configs import RegisterSeller, EditSeller
 
@@ -36,6 +35,7 @@ async def company_name(msg: Message, state: FSMContext):
     ikb = IKB()
     ikb.button(text="Да", callback_data="yes_reg_company_name")
     ikb.button(text="Нет", callback_data="no_reg_company_name")
+    await state.update_data(tg_id=msg.from_user.id)
     await state.update_data(company_name=msg.text)
     await msg.answer(f"Ваше название {msg.text}?", reply_markup=ikb.as_markup())
 
@@ -110,15 +110,53 @@ async def photo_id(msg: Message, state: FSMContext):
 # Обработчик подтверждения на сохранение
 @router.callback_query(F.data == "yes_reg_seller")
 async def reg_seller_yes(call: CallbackQuery, state: FSMContext):
+    await call.message.delete()
+
+    data = await state.get_data()
+
+    ikb = IKB()
+    ikb.button(text="Утвердить", callback_data="confirm")
+    ikb.button(text="Отклонить", callback_data="cancell")
+
+    mess = await call.bot.send_photo(
+        chat_id=config.other_grup,
+        photo=data['photo_id'],
+        caption=
+        f"<b>Компания:</b> {data['company_name']}\n"
+        f"<b>Тип продукции:</b> {data['types']}\n"
+        f"<b>Короткое описание:</b> {data['short_desc']}\n"
+        f"<b>Полное описание:</b> {data['full_desc']}\n",
+        message_thread_id=config.confirming_thread,
+        reply_markup=ikb.as_markup()
+    )
+    await state.update_data(message_id=mess.message_id) 
+
+    await db.time_storage.add_timed_data(state)
+
+    await call.message.answer("Данные отправлены на проверку")
+
+@router.callback_query(F.data == "confirm")
+async def confirm_func(call: CallbackQuery):
     ikb = IKB()
     ikb.button(text="Главное меню", callback_data="main_menu")
 
-    await call.message.delete()
-    await call.message.answer("Сохраняю данные...")
-    await db.seller_manager.register_seller(state)
-    await call.message.answer("Данные сохранены")
-    await call.message.answer("Вы зарегистрированы как продавец", reply_markup=ikb.as_markup())
-    await state.clear()
+    data = await db.time_storage.get_timed_data(call.message.message_id)
+    await call.message.answer("Данные утверждены. Уведомление продавцу отправлено!")
+    await call.bot.send_message(chat_id=data.chat_id, 
+                                text="Ваши данные утверждены! Поздравляю!",
+                                reply_markup=ikb.as_markup())
+
+@router.callback_query(F.data == "cancell")
+async def cancell_func(call: CallbackQuery):
+    ikb = IKB()
+    ikb.button(text="Главное меню", callback_data="main_menu")
+
+    data = await db.time_storage.delete_timed_data(call.message.message_id)
+
+    await call.message.answer("Данные отклонены. Уведомление продавцу отправлено!")
+    await call.bot.send_message(chat_id=data.chat_id, 
+                                text="Ваши данные Отклонены! Проверьте правильность данных и попробуйте снова! Данные должны соответствовать правилам /rules",
+                                reply_markup=ikb.as_markup())
 
 # Обработчик изменения данных
 @router.callback_query(F.data == "no_reg_seller")

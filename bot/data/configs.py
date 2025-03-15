@@ -29,6 +29,7 @@ class EditSeller(StatesGroup):
     full_desc = State()
     photo_id = State()
     tg_id = State()
+    message_id = State()
 
 class Feedback(StatesGroup):
     message = State()
@@ -48,7 +49,9 @@ async def get_json(filename: str) -> list:
 class SetConfig(BaseSettings):
     token: SecretStr
     db_url: str
-    feedback_grup: int
+    other_grup: int
+    feedback_thread: int
+    confirming_thread: int
     superadmin: List = [i for i in asyncio.run(get_json("superadmin"))]
     commands: List = [BotCommand(command=cmd[0], description=cmd[1])
                        for cmd in asyncio.run(get_json("my_commands"))]

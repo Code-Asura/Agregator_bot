@@ -84,7 +84,7 @@ async def handle_seller_button(call: CallbackQuery):
     await call.message.answer_photo(
         photo=seller.photo_id,
         caption=f"Полное описание:{seller.full_desc}\n"
-                 "Связаться: @{seller.users.username}",
+                f"Связаться: @{seller.users.username}",
         reply_markup=ikb.as_markup()
     )
 
@@ -184,17 +184,19 @@ async def yes_feedback_send(call: CallbackQuery, state: FSMContext):
 
     try:
         await call.bot.send_photo(
-            chat_id=config.feedback_grup,
+            chat_id=config.other_grup,
             photo=data['photo'],
             caption=data['message'],
+            message_thread_id=config.feedback_thread,
             reply_markup=ikb.as_markup()
         )
         await call.message.answer("Отправлено ☺️")
         state.clear()
     except:
         await call.bot.send_message(
-            chat_id=config.feedback_grup,
+            chat_id=config.other_grup,
             text=data['message'],
+            message_thread_id=config.feedback_thread,
             reply_markup=ikb.as_markup()
         )
         await call.message.answer("Отправлено ☺️")

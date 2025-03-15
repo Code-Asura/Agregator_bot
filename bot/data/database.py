@@ -41,6 +41,17 @@ class Seller(Base):
     short_desc = Column(String, nullable=False)
     full_desc = Column(Text, nullable=False)
     users = relationship("Users", back_populates="seller")
+
+class TimedStorage(Base):
+    __tablename__ = "timed_storage"
+    id = Column(Integer, primary_key=True)
+    message_id = Column(BigInteger, nullable=False)
+    chat_id = Column(BigInteger, nullable=False)
+    types = Column(String, nullable=False)
+    photo_id = Column(String, nullable=False)
+    company_name = Column(String, nullable=False)
+    short_desc = Column(String, nullable=False)
+    full_desc = Column(Text, nullable=False)
 # endregion
 
 # region Работа с БД
@@ -53,6 +64,7 @@ class DBConnect:
     def __init__(self):
         self.user_manager = self.UserManager(self)
         self.seller_manager = self.SellerManager(self)
+        self.time_storage = self.TimeStorage(self)
     
     @classmethod
     async def init_db(cls):
@@ -245,7 +257,71 @@ class DBConnect:
                 stmt = select(Seller).where(Seller.id == seller_id).options(joinedload(Seller.users))
                 result = await session.execute(stmt)
                 return result.scalars().first()
-            
-
     # endregion
+
+    class TimeStorage:
+        def __init__(self, outer_self):
+            self.session = outer_self.session
+
+        async def add_timed_data(self, state: FSMContext):
+            async with self.session() as session:
+                data = await state.get_data()
+
+                new_row = TimedStorage(
+                        chat_id = data['tg_id'],
+                        message_id = data['message_id'],
+                        types = data['types'],
+                        photo_id = data['photo_id'],
+                        company_name = data['company_name'],
+                        short_desc = data['short_desc'],
+                        full_desc = data['full_desc']
+                )
+                session.add(new_row)
+                await session.commit()
+
+                print("+ временные данные")
+        
+        async def get_timed_data(self, msg_id):
+            async with self.session() as session:
+                query = await session.execute(select(TimedStorage)
+                                             .where(TimedStorage.message_id == msg_id))
+                data = query.scalars().first()
+
+                stmt = select(Users).where(Users.tg_id == data.chat_id)
+                result = await session.execute(stmt)
+                user = result.scalars().first()
+
+                user.role = Roles.SELLER.value
+
+                new_seller = Seller(
+                    user_id=user.id,
+                    types=data.types,
+                    photo_id=data.photo_id,
+                    company_name=data.company_name,
+                    short_desc=data.short_desc,
+                    full_desc=data.full_desc
+                )
+                session.add(new_seller)
+
+                if user.username is not None:
+                    print(f"Продавец {user.username} зарегистрирован")
+                else:
+                    print(f"Продавец {user.name} с id:{user.tg_id} зарегистрирован")
+                
+                await session.delete(data)
+
+                await session.commit()
+
+                return data
+        
+        async def delete_timed_data(self, msg_id):
+            async with self.session() as session:
+                query = await session.execute(select(TimedStorage)
+                                             .where(TimedStorage.message_id == msg_id))
+                data = query.scalars().first()
+
+                await session.delete(data)
+                await session.commit()
+
+                return data
 # endregion
