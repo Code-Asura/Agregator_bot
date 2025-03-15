@@ -73,18 +73,18 @@ async def ready_made_food_func(call: CallbackQuery):
 
 @router.callback_query(F.data.startswith("seller_"))
 async def handle_seller_button(call: CallbackQuery):
-    ikb = IKB()
-    ikb.button(text="Отзывы", callback_data="reviews")
-    ikb.button(text="Назад", callback_data="back_food")
-
     seller_id = int(call.data.split("_")[1]) 
     
     seller = await db.seller_manager.get_seller_by_id(seller_id)
+
+    ikb = IKB()
+    #ikb.button(text="Отзывы", callback_data="reviews")
+    ikb.button(text="Заказать", callback_data=f"tg://user?id={seller.users.tg_id}")
+    ikb.button(text="Назад", callback_data="back_food")
     
     await call.message.answer_photo(
         photo=seller.photo_id,
-        caption=f"Полное описание:{seller.full_desc}\n"
-                f"Связаться: @{seller.users.username}",
+        caption=f"Полное описание:{seller.full_desc}\n",
         reply_markup=ikb.as_markup()
     )
 
@@ -174,13 +174,15 @@ async def feedback_phot_skipped(call: CallbackQuery, state: FSMContext):
 # Обработчик кнопки подтверждения отправки
 @router.callback_query(F.data == "yes_send_feedback")
 async def yes_feedback_send(call: CallbackQuery, state: FSMContext):
+    await call.message.delete()
     data = await state.get_data()
     
     ikb = IKB()
     ikb.button(text=f"{call.from_user.first_name}",
                url=f"tg://user?id={call.from_user.id}")
 
-    print(config.feedback_grup)
+    ikb1 = IKB()
+    ikb1.button(text="На галвную", callback_data="back_main")
 
     try:
         await call.bot.send_photo(
@@ -190,8 +192,6 @@ async def yes_feedback_send(call: CallbackQuery, state: FSMContext):
             message_thread_id=config.feedback_thread,
             reply_markup=ikb.as_markup()
         )
-        await call.message.answer("Отправлено ☺️")
-        state.clear()
     except:
         await call.bot.send_message(
             chat_id=config.other_grup,
@@ -199,8 +199,9 @@ async def yes_feedback_send(call: CallbackQuery, state: FSMContext):
             message_thread_id=config.feedback_thread,
             reply_markup=ikb.as_markup()
         )
-        await call.message.answer("Отправлено ☺️")
-        state.clear()
+
+    await call.message.answer("Отправлено ☺️", reply_markup=ikb1.as_markup())
+    state.clear()
 
 @router.callback_query(F.data == "no_send_feedback")
 async def no_feedback_send(call: CallbackQuery, state: FSMContext):

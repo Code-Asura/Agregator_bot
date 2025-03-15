@@ -57,6 +57,7 @@ async def food_reg_seller_func(call: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data.startswith("reg_seller_"))
 async def reg_seller_ready_made_food_func(call: CallbackQuery, state: FSMContext):
+    await call.message.delete()
     types = "_".join(call.data.split("_")[2:])
     match types:
         case "ready_made_food" | "meat_products" | "semi_finished" | \
@@ -83,7 +84,7 @@ async def short_desc(msg: Message, state: FSMContext):
 @router.message(RegisterSeller.full_desc)
 async def full_desc(msg: Message, state: FSMContext):
     if msg.photo:
-        await msg.answer("Короткое описание состоит из БУКВ и СЛОВ")
+        await msg.answer("Полное описание состоит из БУКВ и СЛОВ")
         state.set_state(RegisterSeller.full_desc)
         return
     await state.update_data(full_desc=msg.text)
@@ -177,7 +178,7 @@ async def redacted_seller_func(call: CallbackQuery):
     await editing_seller.send_call_del(call)
 
 # Обработчик кнопки изменения названия компании
-@router.callback_query(F.data == "edit_company_name")
+@router.callback_query(F.data == "redact_company_name")
 async def edit_company_name(call: CallbackQuery, state: FSMContext):
     await call.message.answer("Введите название вашей компании")
     await state.set_state(EditSeller.company_name)
@@ -192,7 +193,7 @@ async def edit_company_name(msg: Message, state: FSMContext):
     await state.clear()
 
 # Обработчик кнопки изменения типа продукции
-@router.callback_query(F.data == "edit_types")
+@router.callback_query(F.data == "redact_types")
 async def edit_types(call: CallbackQuery, state: FSMContext):
     await call.message.answer("Выберите тип продукции")
     await state.set_state(EditSeller.types)
@@ -207,7 +208,7 @@ async def edit_types(msg: Message, state: FSMContext):
     await state.clear()
 
 # Обработчик кнопки изменения краткого описания
-@router.callback_query(F.data == "edit_short_desc")
+@router.callback_query(F.data == "redact_short_desc")
 async def edit_short_desc(call: CallbackQuery, state: FSMContext):
     await call.message.answer("Введите короткое описание")
     await state.set_state(EditSeller.short_desc)
@@ -223,7 +224,7 @@ async def edit_short_desc(msg: Message, state: FSMContext):
 
 # Обработчик кнопки изменения фотографии
 #TODO {отложено} доделать возможность изменения всех фото 
-@router.callback_query(F.data == "edit_photo_id")
+@router.callback_query(F.data == "redact_photo_id")
 async def edit_photo_id(call: CallbackQuery, state: FSMContext):
     await call.message.answer("Пришлите новую фотографию")
     await state.set_state(EditSeller.photo_id)
@@ -238,7 +239,7 @@ async def edit_photo_id(msg: Message, state: FSMContext):
     await state.clear()
 
 # Обработчик кнопки изменения полного описания
-@router.callback_query(F.data == "edit_full_desk")
+@router.callback_query(F.data == "redact_full_desk")
 async def edit_full_desk(call: CallbackQuery, state: FSMContext):
     await call.message.answer("Введите полное описание")
     await state.set_state(EditSeller.full_desc)

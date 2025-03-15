@@ -82,7 +82,7 @@ class OtherMsg:
             ikb1.max_width = 2
             ikb1.button(text="Подробнее", callback_data=f"seller_{seller.id}")
             ikb1.button(text="Заказать", url=f"tg://user?id={seller.users.tg_id}")
-            ikb1.button(text="Отзывы", callback_data="reviews")
+            #ikb1.button(text="Отзывы", callback_data="reviews")
             ikb1.button(text="Назад ↩️", callback_data="back_food")
             # Отправляем сообщение с фото и описанием
             await call.message.answer_photo(
