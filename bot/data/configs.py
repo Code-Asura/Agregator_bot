@@ -15,6 +15,7 @@ from aiogram.fsm.state import State, StatesGroup
 
 # region FSM
 class RegisterSeller(StatesGroup):
+    contact = State()
     company_name = State()
     types = State()
     short_desc = State()
@@ -23,6 +24,7 @@ class RegisterSeller(StatesGroup):
     tg_id = State()
 
 class EditSeller(StatesGroup):
+    contact = State()
     company_name = State()
     types = State()
     short_desc = State()

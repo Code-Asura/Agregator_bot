@@ -35,6 +35,7 @@ class Seller(Base):
     __tablename__ = "sellers"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, index=True)
+    contact = Column(String, nullable=False)
     types = Column(String, nullable=False)
     photo_id = Column(String, nullable=False)
     company_name = Column(String, nullable=False)
@@ -47,6 +48,7 @@ class TimedStorage(Base):
     id = Column(Integer, primary_key=True)
     message_id = Column(BigInteger, nullable=False)
     chat_id = Column(BigInteger, nullable=False)
+    contact = Column(String, nullable=False)
     types = Column(String, nullable=False)
     photo_id = Column(String, nullable=False)
     company_name = Column(String, nullable=False)
@@ -176,6 +178,7 @@ class DBConnect:
                     result = await session.execute(stmt)
                     seller = result.scalars().first()
                     
+                    seller.contact = data['contact']
                     seller.company_name = data["company_name"]
                     seller.types=data["types"]
                     seller.photo_id=data["photo_id"]
@@ -190,6 +193,7 @@ class DBConnect:
 
                 new_seller = Seller(
                     user_id=user.id,
+                    contact=data['contact'],
                     types=data["types"],
                     photo_id=data["photo_id"],
                     company_name=data["company_name"],
@@ -228,6 +232,8 @@ class DBConnect:
                         seller.photo_id = photo_id
                     case {"types": types}:
                         seller.types = types
+                    case {"contact": contact}:
+                        seller.contact = contact
                     case _:
                         return False
 
@@ -270,6 +276,7 @@ class DBConnect:
                 new_row = TimedStorage(
                         chat_id = data['tg_id'],
                         message_id = data['message_id'],
+                        contact = data['contact'],
                         types = data['types'],
                         photo_id = data['photo_id'],
                         company_name = data['company_name'],
@@ -295,6 +302,7 @@ class DBConnect:
 
                 new_seller = Seller(
                     user_id=user.id,
+                    contact=data.contact,
                     types=data.types,
                     photo_id=data.photo_id,
                     company_name=data.company_name,
@@ -312,6 +320,8 @@ class DBConnect:
 
                 await session.commit()
 
+
+                print("- временные данные")
                 return data
         
         async def delete_timed_data(self, msg_id):
@@ -322,6 +332,7 @@ class DBConnect:
 
                 await session.delete(data)
                 await session.commit()
-
+                
+                print("- временные данные")
                 return data
 # endregion

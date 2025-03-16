@@ -27,7 +27,16 @@ async def reg_seller(msg: Message, state: FSMContext):
         await seller_true.send_msg(msg)
     else:
         await seller_start_reg.send_msg(msg)
-        await state.set_state(RegisterSeller.company_name)
+        await state.set_state(RegisterSeller.contact)
+
+@router.message(RegisterSeller.contact)
+async def contact(msg: Message, state: FSMContext):
+    if msg.photo:
+        await msg.answer("Контактом может быть только номер телефона или юзернаме тг")
+        return await state.set_state(RegisterSeller.contact)
+    await state.update_data(contact=msg.text)
+    await msg.answer("Теперь отправьте название вашей компании")
+    await state.set_state(RegisterSeller.company_name)
 
 # Обработчик состояния для имени компаннии
 @router.message(RegisterSeller.company_name)
@@ -41,12 +50,14 @@ async def company_name(msg: Message, state: FSMContext):
 
 @router.callback_query(F.data == "yes_reg_company_name")
 async def yes_reg_company_name_func(call: CallbackQuery, state: FSMContext):
+    await call.message.delete()
     await call.message.answer("Выберите тип продукции")
     await reg_seller_types_menu.send_call(call)
     await state.set_state(RegisterSeller.types)
 
 @router.callback_query(F.data == "no_reg_company_name")
 async def no_reg_company_name_func(call: CallbackQuery, state: FSMContext):
+    await call.message.delete()
     await call.message.answer("Введите название компании")
     await state.set_state(RegisterSeller.company_name)
 
@@ -102,6 +113,7 @@ async def photo_id(msg: Message, state: FSMContext):
         photo=data['photo_id'],
         caption=
         f"<b>Компания:</b> {data['company_name']}\n"
+        f"<b>Контакт:</b> {data['contact']}\n"
         f"<b>Тип продукции:</b> {data['types']}\n"
         f"<b>Короткое описание:</b> {data['short_desc']}\n"
         f"<b>Полное описание:</b> {data['full_desc']}\n"
@@ -124,6 +136,7 @@ async def reg_seller_yes(call: CallbackQuery, state: FSMContext):
         photo=data['photo_id'],
         caption=
         f"<b>Компания:</b> {data['company_name']}\n"
+        f"<b>Контакт:</b> {data['contact']}\n"
         f"<b>Тип продукции:</b> {data['types']}\n"
         f"<b>Короткое описание:</b> {data['short_desc']}\n"
         f"<b>Полное описание:</b> {data['full_desc']}\n",
@@ -162,7 +175,18 @@ async def cancell_func(call: CallbackQuery):
 # Обработчик изменения данных
 @router.callback_query(F.data == "no_reg_seller")
 async def reg_seller_no(call: CallbackQuery):
-    await no_reg_seller_menu.send_call_del(call)
+    ikb = IKB()
+    ikb.max_width = 1
+    ikb.button(text="Заполнить повторно", callback_data="full_edit_seller")
+    ikb.button(text="Сохранить", callback_data="yes_reg_seller")
+
+    await call.message.answer("Функция изменеия данных на этом этапе находится"
+                              "в разработке. Вы можете ввести все данные заново"
+                              "или изменить их после регистрации нажав команду"
+                              "входа как продавец. Приношу свои извининения как"
+                              "разработчик не бейте тапками 🙏",
+                              reply_markup=ikb.as_markup())
+    #await no_reg_seller_menu.send_call_del(call)
 
 @router.callback_query(F.data == "cansel_reg_seller")
 async def cansel_seller_reg(call: CallbackQuery):
@@ -178,8 +202,9 @@ async def redacted_seller_func(call: CallbackQuery):
     await editing_seller.send_call_del(call)
 
 # Обработчик кнопки изменения названия компании
-@router.callback_query(F.data == "redact_company_name")
+@router.callback_query(F.data == "edit_company_name")
 async def edit_company_name(call: CallbackQuery, state: FSMContext):
+    await call.messega.delete()
     await call.message.answer("Введите название вашей компании")
     await state.set_state(EditSeller.company_name)
 
@@ -193,8 +218,9 @@ async def edit_company_name(msg: Message, state: FSMContext):
     await state.clear()
 
 # Обработчик кнопки изменения типа продукции
-@router.callback_query(F.data == "redact_types")
+@router.callback_query(F.data == "edit_types")
 async def edit_types(call: CallbackQuery, state: FSMContext):
+    await call.messega.delete()
     await call.message.answer("Выберите тип продукции")
     await state.set_state(EditSeller.types)
 
@@ -208,8 +234,9 @@ async def edit_types(msg: Message, state: FSMContext):
     await state.clear()
 
 # Обработчик кнопки изменения краткого описания
-@router.callback_query(F.data == "redact_short_desc")
+@router.callback_query(F.data == "edit_short_desc")
 async def edit_short_desc(call: CallbackQuery, state: FSMContext):
+    await call.messega.delete()
     await call.message.answer("Введите короткое описание")
     await state.set_state(EditSeller.short_desc)
 
@@ -224,8 +251,9 @@ async def edit_short_desc(msg: Message, state: FSMContext):
 
 # Обработчик кнопки изменения фотографии
 #TODO {отложено} доделать возможность изменения всех фото 
-@router.callback_query(F.data == "redact_photo_id")
+@router.callback_query(F.data == "edit_photo_id")
 async def edit_photo_id(call: CallbackQuery, state: FSMContext):
+    await call.messega.delete()
     await call.message.answer("Пришлите новую фотографию")
     await state.set_state(EditSeller.photo_id)
 
@@ -239,8 +267,9 @@ async def edit_photo_id(msg: Message, state: FSMContext):
     await state.clear()
 
 # Обработчик кнопки изменения полного описания
-@router.callback_query(F.data == "redact_full_desk")
+@router.callback_query(F.data == "edit_full_desk")
 async def edit_full_desk(call: CallbackQuery, state: FSMContext):
+    await call.messega.delete()
     await call.message.answer("Введите полное описание")
     await state.set_state(EditSeller.full_desc)
 
@@ -258,4 +287,12 @@ async def edit_full_desk(msg: Message, state: FSMContext):
 async def full_edit_seller(call: CallbackQuery, state: FSMContext):
     await call.message.answer("Введите название вашей компании")
     await state.set_state(RegisterSeller.company_name)
+
+#region Изменение во время регистрации
+@router.callback_query(F.data.startswith("redact_"))
+async def redacted_company_name(call: CallbackQuery, state: FSMContext):
+    await call.message.delete()
+    await call.messega.answer("Функция находится в разработке!")
+
+# endregion
 # endregion
